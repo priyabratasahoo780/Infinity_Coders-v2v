@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn-icons-png.flaticon.com/512/3233/3233483.png" alt="SafeSphere AI Logo" width="150" />
+  <img src="https://github.com/user-attachments/assets/ec53a152-edab-4b2a-a92c-e1bc14522a36" alt="SafeSphere AI Logo" width="180" />
 </p>
 
 <h1 align="center">SafeSphere AI</h1>
