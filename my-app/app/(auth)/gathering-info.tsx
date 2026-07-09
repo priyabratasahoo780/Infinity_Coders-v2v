@@ -1,0 +1,437 @@
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
+
+export default function GatheringInfoScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  
+  const [fullName, setFullName] = useState((params.fullName as string) || '');
+  const [email, setEmail] = useState((params.email as string) || '');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleNext = () => {
+    router.push('/(auth)/safety-info');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" />
+      
+      {/* Top Header Row */}
+      <View style={styles.topRow}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Feather name="arrow-left" size={24} color="#111827" />
+        </TouchableOpacity>
+        <View style={styles.loginRedirectContainer}>
+          <Text style={styles.loginRedirectText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/sign-in')}>
+            <Text style={styles.loginRedirectLink}>Log In</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header Texts */}
+          <View style={styles.headerContainer}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>{"Let's set up your SafeSphere AI account"}</Text>
+          </View>
+
+          {/* Progress Stepper */}
+          <View style={styles.stepperContainer}>
+            <View style={styles.step}>
+              <View style={[styles.stepIconContainer, styles.activeStepIcon]}>
+                <Feather name="user" size={20} color="#F34E62" />
+              </View>
+              <Text style={[styles.stepText, styles.activeStepText]}>Account</Text>
+            </View>
+
+            <View style={styles.stepperLine} />
+
+            <View style={styles.step}>
+              <View style={styles.stepIconContainer}>
+                <Feather name="shield" size={18} color="#9CA3AF" />
+              </View>
+              <Text style={styles.stepText}>Safety Info</Text>
+            </View>
+
+            <View style={styles.stepperLine} />
+
+            <View style={styles.step}>
+              <View style={styles.stepIconContainer}>
+                <Feather name="users" size={18} color="#9CA3AF" />
+              </View>
+              <Text style={styles.stepText}>Trusted Contacts</Text>
+            </View>
+
+            <View style={styles.stepperLine} />
+
+            <View style={styles.step}>
+              <View style={styles.stepIconContainer}>
+                <Feather name="check" size={18} color="#9CA3AF" />
+              </View>
+              <Text style={styles.stepText}>Complete</Text>
+            </View>
+          </View>
+
+          {/* Form Fields */}
+          <View style={styles.formContainer}>
+            
+            {/* Full Name */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <View style={styles.inputWrapper}>
+                <Feather name="user" size={18} color="#F34E62" style={styles.inputIconLeft} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter your full name"
+                  placeholderTextColor="#9CA3AF"
+                  value={fullName}
+                  onChangeText={setFullName}
+                />
+              </View>
+            </View>
+
+            {/* Email Address */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <View style={styles.inputWrapper}>
+                <Feather name="mail" size={18} color="#F34E62" style={styles.inputIconLeft} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter your email address"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+              </View>
+            </View>
+
+            {/* Password */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.inputWrapper}>
+                <Feather name="lock" size={18} color="#F34E62" style={styles.inputIconLeft} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Create a strong password"
+                  placeholderTextColor="#9CA3AF"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.inputIconRight}>
+                  <Feather name={showPassword ? "eye" : "eye-off"} size={18} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.helperText}>
+                At least 8 characters with uppercase, lowercase, number & symbol
+              </Text>
+            </View>
+
+            {/* Confirm Password */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Confirm Password</Text>
+              <View style={styles.inputWrapper}>
+                <Feather name="lock" size={18} color="#F34E62" style={styles.inputIconLeft} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Confirm your password"
+                  placeholderTextColor="#9CA3AF"
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.inputIconRight}>
+                  <Feather name={showConfirmPassword ? "eye" : "eye-off"} size={18} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Date of Birth */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Date of Birth</Text>
+              <View style={styles.inputWrapper}>
+                <Feather name="calendar" size={18} color="#F34E62" style={styles.inputIconLeft} />
+                <TextInput
+                  style={[styles.textInput, { color: '#9CA3AF' }]}
+                  placeholder="Select your date of birth"
+                  placeholderTextColor="#9CA3AF"
+                  editable={false} // Would normally open a date picker
+                />
+                <Feather name="chevron-down" size={20} color="#6B7280" style={styles.inputIconRight} />
+              </View>
+            </View>
+            
+          </View>
+
+          {/* Next Button */}
+          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+            <Text style={styles.nextButtonText}>Next</Text>
+            <Feather name="chevron-right" size={20} color="#FFFFFF" style={styles.buttonArrow} />
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Social Sign Up */}
+          <View style={styles.socialContainer}>
+            <TouchableOpacity style={styles.socialButton}>
+              <FontAwesome5 name="google" size={18} color="#DB4437" style={styles.socialIcon} />
+              <Text style={styles.socialButtonText}>Sign up with Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.socialButton}>
+              <FontAwesome5 name="apple" size={20} color="#000000" style={styles.socialIcon} />
+              <Text style={styles.socialButtonText}>Sign up with Apple</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.socialButton}>
+              <Feather name="phone" size={18} color="#6D28D9" style={styles.socialIcon} />
+              <Text style={styles.socialButtonText}>Sign up with Phone Number</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Security Footer */}
+          <View style={styles.securityFooter}>
+            <Feather name="shield" size={18} color="#F34E62" />
+            <View style={styles.securityTextContainer}>
+              <Text style={styles.securityText}>Your data is secure and encrypted.</Text>
+              <Text style={styles.securityText}>We never share your information.</Text>
+            </View>
+          </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  backButton: {
+    padding: 4,
+  },
+  loginRedirectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  loginRedirectText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  loginRedirectLink: {
+    fontSize: 14,
+    color: '#F34E62',
+    fontWeight: '600',
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    paddingTop: 10,
+  },
+  headerContainer: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#6B7280',
+  },
+  stepperContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 32,
+    paddingHorizontal: 4,
+  },
+  step: {
+    alignItems: 'center',
+    width: 65,
+  },
+  stepIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 8,
+  },
+  activeStepIcon: {
+    backgroundColor: '#FFF0F2',
+    borderColor: '#F34E62',
+  },
+  stepText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    textAlign: 'center',
+  },
+  activeStepText: {
+    color: '#F34E62',
+    fontWeight: '600',
+  },
+  stepperLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginTop: 25,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 1,
+  },
+  formContainer: {
+    gap: 18,
+    marginBottom: 24,
+  },
+  inputGroup: {
+    gap: 8,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    height: 56,
+  },
+  inputIconLeft: {
+    marginRight: 12,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#111827',
+  },
+  inputIconRight: {
+    padding: 4,
+  },
+  helperText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: -4,
+  },
+  nextButton: {
+    backgroundColor: '#F34E62',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 56,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  nextButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonArrow: {
+    marginLeft: 8,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#F3F4F6',
+  },
+  dividerText: {
+    paddingHorizontal: 16,
+    color: '#9CA3AF',
+    fontSize: 14,
+  },
+  socialContainer: {
+    gap: 12,
+    marginBottom: 32,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    borderRadius: 12,
+    height: 52,
+    backgroundColor: '#FFFFFF',
+  },
+  socialIcon: {
+    marginRight: 12,
+  },
+  socialButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  securityFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  securityTextContainer: {
+    alignItems: 'flex-start',
+  },
+  securityText: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    lineHeight: 18,
+  },
+});
