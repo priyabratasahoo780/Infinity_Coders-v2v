@@ -241,38 +241,6 @@ erDiagram
 
 ---
 
-## 🚀 Setup & Local Development
-
-### Prerequisites
-- Node.js `v18+`
-- Expo CLI
-- Docker (for local Supabase instance)
-- Supabase CLI
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-org/Infinity_Coders-v2v.git
-   cd Infinity_Coders-v2v
-   npm install
-   ```
-
-2. **Configure Environment:**
-   ```bash
-   cp .env.example .env
-   # Add your API keys to .env
-   ```
-
-3. **Start Development Server:**
-   ```bash
-   npx expo start
-   ```
-
-   ```
-
----
-
 ## 📂 Project Structure & Feature Mapping
 
 We follow a strict **Feature-First Clean Architecture**. Each domain is isolated to prevent tangled dependencies.
@@ -303,6 +271,36 @@ Infinity_Coders-v2v/
 │
 └── assets/                     # Fonts, images, and brand assets
 ```
+
+---
+
+## 🚀 Setup & Local Development
+
+### Prerequisites
+- Node.js `v18+`
+- Expo CLI
+- Docker (for local Supabase instance)
+- Supabase CLI
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-org/Infinity_Coders-v2v.git
+   cd Infinity_Coders-v2v
+   npm install
+   ```
+
+2. **Configure Environment:**
+   ```bash
+   cp .env.example .env
+   # Add your API keys to .env
+   ```
+
+3. **Start Development Server:**
+   ```bash
+   npx expo start
+   ```
 
 ---
 
