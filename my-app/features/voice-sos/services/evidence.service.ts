@@ -16,7 +16,7 @@ export class AudioEvidenceService {
     try {
       this.isRecording = true;
       sosLogger.info(LOG_SOURCE, 'Requesting permissions for audio evidence recording');
-      
+
       const permission = await Audio.requestPermissionsAsync();
       if (permission.status !== 'granted') {
         sosLogger.warn(LOG_SOURCE, 'Audio recording permission denied');
@@ -59,6 +59,31 @@ export class AudioEvidenceService {
     } catch (error) {
       sosLogger.warn(LOG_SOURCE, 'Error stopping audio recording', { error });
       this.recording = null;
+      this.isRecording = false;
+      return null;
+    }
+  }
+
+  async recordVideoEvidence(durationMs = 10000): Promise<string | null> {
+    if (this.isRecording) {
+      sosLogger.warn(LOG_SOURCE, 'Already recording evidence, skipping video');
+      return null;
+    }
+
+    try {
+      this.isRecording = true;
+      sosLogger.info(LOG_SOURCE, 'Starting mock video evidence recording...');
+      
+      // Since background/headless video recording requires native modules 
+      // or expo-camera which needs UI, we simulate the recording process here
+      await new Promise(resolve => setTimeout(resolve, durationMs));
+      
+      const simulatedVideoUri = 'file:///simulated/video/evidence.mp4';
+      
+      this.isRecording = false;
+      return simulatedVideoUri;
+    } catch (error) {
+      sosLogger.warn(LOG_SOURCE, 'Failed to record video evidence', { error });
       this.isRecording = false;
       return null;
     }
