@@ -30,12 +30,10 @@ export default function OnboardingScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.mainContent}>
         {/* Main Illustration */}
         <View style={styles.illustrationContainer}>
+          <Text style={styles.welcomeToText}>Welcome to</Text>
           <Image
             source={require('@/assets/images/safesphere_illustration.png')}
             style={styles.illustration}
@@ -43,106 +41,88 @@ export default function OnboardingScreen() {
           />
         </View>
 
-        {/* Welcome Text */}
-        <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeText}>Welcome to</Text>
-          <Text style={styles.brandText}>SafeSphere AI</Text>
-          <Text style={styles.subtitleText}>
-            Your intelligent personal safety companion.
-          </Text>
-          <Text style={styles.subtitleText}>
-            {"We're here to protect, guide, and empower you every step of the way."}
-          </Text>
-        </View>
-
-        {/* Dot Indicators */}
-        <View style={styles.dotsContainer}>
-          <View style={[styles.dot, styles.activeDot]} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-        </View>
-
-        {/* Features 2x2 Grid */}
-        <View style={styles.gridContainer}>
-          {/* Card 1: Instant SOS */}
-          <View style={styles.card}>
-            <View style={[styles.iconWrapper, { backgroundColor: '#FFF0F2' }]}>
-              <MaterialCommunityIcons name="alarm-light-outline" size={24} color="#F34E62" />
+        <View style={styles.bottomSection}>
+          {/* Welcome Text */}
+          <View style={styles.welcomeContainer}>
+            <Text style={styles.welcomeTitle}>Empowering Your Safety</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Experience next-generation personal security. Get AI-powered incident prediction, real-time guardian tracking, and instant one-tap emergency SOS dispatches.
+            </Text>
+          </View>
+          {/* Features 2x2 Grid */}
+          <View style={styles.gridContainer}>
+            {/* Card 1: Instant SOS */}
+            <View style={styles.card}>
+              <View style={[styles.iconWrapper, { backgroundColor: '#FFF0F2' }]}>
+                <MaterialCommunityIcons name="alarm-light-outline" size={20} color="#F34E62" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardTitle, { color: '#F34E62' }]}>Instant SOS</Text>
+                <Text style={styles.cardDescription}>
+                  One tap alert to trusted contacts.
+                </Text>
+              </View>
             </View>
-            <View style={styles.cardContent}>
-              <Text style={[styles.cardTitle, { color: '#F34E62' }]}>Instant SOS</Text>
-              <Text style={styles.cardDescription}>
-                One tap to alert your trusted contacts and share your location.
-              </Text>
+
+            {/* Card 2: Live Tracking */}
+            <View style={styles.card}>
+              <View style={[styles.iconWrapper, { backgroundColor: '#F3E8FF' }]}>
+                <Feather name="map-pin" size={18} color="#9061F9" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardTitle, { color: '#9061F9' }]}>Live Tracking</Text>
+                <Text style={styles.cardDescription}>
+                  Share real-time location.
+                </Text>
+              </View>
+            </View>
+
+            {/* Card 3: AI Safety */}
+            <View style={styles.card}>
+              <View style={[styles.iconWrapper, { backgroundColor: '#DEF7EC' }]}>
+                <Feather name="shield" size={18} color="#0E9F6E" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardTitle, { color: '#0E9F6E' }]}>AI Safety</Text>
+                <Text style={styles.cardDescription}>
+                  Smart scores & suggestions.
+                </Text>
+              </View>
+            </View>
+
+            {/* Card 4: Community */}
+            <View style={styles.card}>
+              <View style={[styles.iconWrapper, { backgroundColor: '#FEF3C7' }]}>
+                <Feather name="users" size={18} color="#D97706" />
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardTitle, { color: '#D97706' }]}>Community</Text>
+                <Text style={styles.cardDescription}>
+                  Report & help safely together.
+                </Text>
+              </View>
             </View>
           </View>
 
-          {/* Card 2: Live Tracking */}
-          <View style={styles.card}>
-            <View style={[styles.iconWrapper, { backgroundColor: '#F3E8FF' }]}>
-              <Feather name="map-pin" size={20} color="#9061F9" />
-            </View>
-            <View style={styles.cardContent}>
-              <Text style={[styles.cardTitle, { color: '#9061F9' }]}>Live Tracking</Text>
-              <Text style={styles.cardDescription}>
-                Share your live location with trusted people in real time.
-              </Text>
-            </View>
-          </View>
-
-          {/* Card 3: AI Safety Score */}
-          <View style={styles.card}>
-            <View style={[styles.iconWrapper, { backgroundColor: '#DEF7EC' }]}>
-              <Feather name="shield" size={20} color="#0E9F6E" />
-            </View>
-            <View style={styles.cardContent}>
-              <Text style={[styles.cardTitle, { color: '#0E9F6E' }]}>AI Safety Score</Text>
-              <Text style={styles.cardDescription}>
-                Get AI-powered safety scores & smarter suggestions.
-              </Text>
-            </View>
-          </View>
-
-          {/* Card 4: Community Help */}
-          <View style={styles.card}>
-            <View style={[styles.iconWrapper, { backgroundColor: '#FEF3C7' }]}>
-              <Feather name="users" size={20} color="#D97706" />
-            </View>
-            <View style={styles.cardContent}>
-              <Text style={[styles.cardTitle, { color: '#D97706' }]}>Community Help</Text>
-              <Text style={styles.cardDescription}>
-                Report incidents and help build a safer community together.
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Action Button - Navigates to Features page */}
-        <TouchableOpacity 
-          style={styles.getStartedButton}
-          activeOpacity={0.9}
-          onPress={() => router.push('/features')}
-        >
-          <Text style={styles.getStartedText}>Get Started</Text>
-          <Feather name="chevron-right" size={20} color="#FFFFFF" style={styles.buttonArrow} />
-        </TouchableOpacity>
-
-        {/* Login Redirect */}
-        <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/sign-in')}>
-            <Text style={styles.loginLink}>Log In</Text>
+          {/* Action Button - Navigates to Features page */}
+          <TouchableOpacity 
+            style={styles.getStartedButton}
+            activeOpacity={0.9}
+            onPress={() => router.push('/features')}
+          >
+            <Text style={styles.getStartedText}>Get Started</Text>
+            <Feather name="chevron-right" size={20} color="#FFFFFF" style={styles.buttonArrow} />
           </TouchableOpacity>
-        </View>
 
-        {/* AI Voice Engine Debug */}
-        <TouchableOpacity 
-          style={{ marginTop: 20, alignItems: 'center' }} 
-          onPress={() => router.push('/test-ai-voice')}
-        >
-          <Text style={{ color: '#0E9F6E', fontWeight: 'bold' }}>Test AI Voice Engine (Debug)</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          {/* Login Redirect */}
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => router.push('/(auth)/sign-in')}>
+              <Text style={styles.loginLink}>Log In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -156,7 +136,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 10,
   },
   skipButton: {
     flexDirection: 'row',
@@ -168,69 +148,62 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontWeight: '500',
   },
-  scrollContent: {
+  mainContent: {
+    flex: 1,
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 20,
   },
   illustrationContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 20,
+    marginBottom: 10,
+  },
+  welcomeToText: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: -5,
   },
   illustration: {
     width: '100%',
-    height: width * 0.75,
+    height: '100%', // Flexible height
+    maxHeight: 250, // Cap height much smaller to make room for text
+  },
+  bottomSection: {
+    justifyContent: 'flex-end',
   },
   welcomeContainer: {
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  welcomeText: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  brandText: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#F34E62',
-    marginBottom: 8,
-  },
-  subtitleText: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 20,
+    marginBottom: 16,
     paddingHorizontal: 10,
   },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 30,
+  welcomeTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: 4,
-  },
-  activeDot: {
-    backgroundColor: '#F34E62',
-    width: 20,
+  welcomeSubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 18,
   },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: 20,
   },
   card: {
     width: '48%',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    padding: 12, // Reduced padding
+    marginBottom: 12, // Reduced margin
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -240,34 +213,34 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6',
   },
   iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   cardContent: {
     flex: 1,
   },
   cardTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontSize: 13, // Slightly smaller
+    fontWeight: '800',
+    marginBottom: 2,
   },
   cardDescription: {
-    fontSize: 12,
+    fontSize: 11, // Slightly smaller
     color: '#6B7280',
-    lineHeight: 16,
+    lineHeight: 14,
   },
   getStartedButton: {
     backgroundColor: '#F34E62',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 14, // Reduced padding
     borderRadius: 30,
-    marginBottom: 20,
+    marginBottom: 16,
     shadowColor: '#F34E62',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -276,7 +249,7 @@ const styles = StyleSheet.create({
   },
   getStartedText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   buttonArrow: {
@@ -287,13 +260,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 10,
   },
   loginText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#6B7280',
   },
   loginLink: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#111827',
     fontWeight: '700',
   },
