@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useClerk } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 
 interface Contact {
   id: string;
@@ -25,7 +25,7 @@ interface Contact {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { signOut } = useClerk();
+  const { signOut } = useAuth();
   
   // Trusted contacts state
   const [contacts, setContacts] = useState<Contact[]>([
