@@ -32,14 +32,6 @@ export default function OnboardingScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
 
-      {/* Top Header Row */}
-      <View style={styles.topRow}>
-        <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(auth)/sign-in')}>
-          <Text style={styles.skipText}>Skip </Text>
-          <Feather name="chevron-right" size={16} color="#8E8E93" />
-        </TouchableOpacity>
-      </View>
-
       {/* Main Illustration */}
       <View style={styles.illustrationContainer}>
         <Image
@@ -126,21 +118,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingTop: 8,
-  },
-  skipButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-  },
-  skipText: {
-    fontSize: 15,
-    color: '#8E8E93',
-    fontWeight: '500',
   },
   illustrationContainer: {
     alignItems: 'center',
