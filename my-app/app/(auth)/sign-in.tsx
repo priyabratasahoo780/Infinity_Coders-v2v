@@ -28,7 +28,6 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-<<<<<<< HEAD
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -39,7 +38,7 @@ export default function SignInScreen() {
     setLoading(true);
     try {
       await authService.login(email, password);
-      router.replace('/(tabs)/home');
+      router.replace('/(drawer)/(tabs)/home');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
@@ -68,7 +67,7 @@ export default function SignInScreen() {
     if (response?.type === 'success') {
       const { id_token } = response.params;
       authService.loginWithGoogleCredential(id_token).then(() => {
-        router.replace('/(tabs)/home');
+        router.replace('/(drawer)/(tabs)/home');
       }).catch(error => {
         Alert.alert('Google Sign-In Error', error.message);
       });
@@ -79,18 +78,13 @@ export default function SignInScreen() {
     if (Platform.OS === 'web') {
       try {
         await authService.loginWithGoogleWeb();
-        router.replace('/(tabs)/home');
+        router.replace('/(drawer)/(tabs)/home');
       } catch (error: any) {
         Alert.alert('Google Sign-In Error', error.message);
       }
     } else {
       promptAsync();
     }
-=======
-  const handleLogin = () => {
-    // Navigate to home tab
-    router.replace('/(drawer)/(tabs)/home');
->>>>>>> 51e80f8 (chore: save local progress before pull)
   };
 
   return (

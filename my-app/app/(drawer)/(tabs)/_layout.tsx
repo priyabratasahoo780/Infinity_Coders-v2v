@@ -2,7 +2,7 @@ import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useVoiceDetection } from '../../features/voice-sos/hooks/useVoiceDetection';
+import { useVoiceDetection } from '../../../features/voice-sos/hooks/useVoiceDetection';
 
 export default function TabLayout() {
   const router = useRouter();
