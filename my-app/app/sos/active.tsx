@@ -24,6 +24,7 @@ import { MockNotificationService } from '../../features/guardian/services/MockNo
 import { EmergencyStatus, NetworkStatus } from '../../features/emergency/types/emergency.types';
 import { SupportedLanguage } from '../../features/voice-sos/types/voice.types';
 import { authService } from '../../src/services/authService';
+import { ServiceLocator } from '../../features/voice-sos/utils/ServiceLocator';
 
 const { width } = Dimensions.get('window');
 
@@ -46,16 +47,7 @@ export default function ActiveSosScreen() {
 
   const triggerManualSOS = async () => {
     try {
-      const emergencyService = new EmergencyService({
-        emergencyRepo: new FirebaseEmergencyRepository(),
-        storageService: new FirebaseStorageService(),
-        evidenceService: new AudioEvidenceService(),
-        guardianRepo: new FirebaseGuardianRepository(),
-        notificationService: new MockNotificationService(),
-        whatsAppService: new TwilioService(),
-        smsService: new TwilioService(),
-        emergencyCallingService: { triggerAutomatedCall: async () => { } }
-      });
+      const emergencyService = ServiceLocator.getInstance().emergency;
 
       await emergencyService.triggerEmergency({
         decision: { shouldTrigger: true, confidenceScore: 100, status: EmergencyStatus.EMERGENCY, reason: 'Manual SOS Button Pressed', timestamp: Date.now(), signals: {} as any, weights: {} as any },
@@ -112,6 +104,11 @@ export default function ActiveSosScreen() {
   };
 
   const handleCancel = () => {
+    import('react-native').then(({ DeviceEventEmitter }) => {
+      DeviceEventEmitter.emit('stop_sos');
+    });
+    ServiceLocator.getInstance().emergency.resolveEmergency();
+    ServiceLocator.getInstance().mic.stop();
     // Return back to dashboard
     router.replace('/(drawer)/(tabs)/home');
   };

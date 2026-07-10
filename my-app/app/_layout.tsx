@@ -10,7 +10,8 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
-// Auth guard: Clerk session ke hisaab se redirect karta hai
+// Auth guard: sirf drawer ko protect karta hai
+// Index/landing screen par auto-redirect NAHI hoga
 function InitialLayout() {
   const { isLoaded, isSignedIn } = useAuth();
   const segments = useSegments();
@@ -19,19 +20,21 @@ function InitialLayout() {
   useEffect(() => {
     if (!isLoaded) return;
 
-    const inAuthGroup = segments[0] === "(auth)";
     const inDrawerGroup = segments[0] === "(drawer)";
+    const inAuthGroup = segments[0] === "(auth)";
+    const isIndex = segments.length === 0 || (segments.length === 1 && segments[0] === "index");
 
-    if (isSignedIn && inAuthGroup) {
-      // Login ho gaya — home bhejo
+    if (isSignedIn && (inAuthGroup || isIndex)) {
+      // User signed in hai aur auth/landing pages par hai — home bhejo
       router.replace("/(drawer)/(tabs)/home");
     } else if (!isSignedIn && inDrawerGroup) {
-      // Logged out — sign-in bhejo
+      // User signed out hai aur protected drawer pages par hai — sign-in bhejo
       router.replace("/(auth)/sign-in");
     }
   }, [isLoaded, isSignedIn, segments]);
 
   if (!isLoaded) {
+    // Clerk load ho raha hai — blank screen (no flash)
     return null;
   }
 

@@ -1,16 +1,16 @@
 import React, { useRef, useState } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
-  SafeAreaView, 
-  TouchableOpacity, 
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
   ActivityIndicator,
   Modal,
   Pressable
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Info, X } from 'lucide-react-native';
 import { useSafetyAnalysis } from '../hooks/useSafetyAnalysis';
@@ -24,7 +24,7 @@ export const SafetyAnalysisScreen = () => {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useSafetyAnalysis();
   const scrollViewRef = useRef<ScrollView>(null);
-  
+
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [tipsModalVisible, setTipsModalVisible] = useState(false);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
@@ -57,13 +57,13 @@ export const SafetyAnalysisScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()}>
           <ArrowLeft size={24} color="#10153A" />
         </TouchableOpacity>
-        
+
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>AI Safety Analysis</Text>
           <Text style={styles.headerSubtitle}>Your personalized safety overview</Text>
@@ -74,34 +74,28 @@ export const SafetyAnalysisScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <SafetyScoreCard data={data} />
-        
-        <RiskBreakdownCard 
-          risks={data.risks} 
+
+        <RiskBreakdownCard
+          risks={data.risks}
           onViewDetails={() => setDetailsModalVisible(true)}
         />
-        
-        <RecommendationsCard 
-          recommendations={data.recommendations} 
-          onOpenTips={() => setTipsModalVisible(true)} 
+
+        <RecommendationsCard
+          recommendations={data.recommendations}
+          onOpenTips={() => setTipsModalVisible(true)}
           onSeeAll={() => setAllRecommendationsModalVisible(true)}
         />
-        
+
         <ImproveScoreCard onPress={scrollToRecommendations} />
 
-        {data.isDemoData && (
-          <Text style={styles.demoLabel}>
-            Demo safety insights — this score provides general guidance and does not guarantee personal safety.
-          </Text>
-        )}
-
         {/* Space for bottom tabs */}
-        <View style={{ height: 60 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* Info Modal */}

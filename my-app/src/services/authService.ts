@@ -1,18 +1,18 @@
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithCredential,
   GoogleAuthProvider,
-  signInWithPhoneNumber
+  signInWithPhoneNumber,
+  signOut
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../config/firebaseConfig";
 
 export const authService = {
-  // Sign up with email and password, then create user profile in Firestore
-  async signUp(email: string, password: string, fullName: string) {
-    let user;
+  // Create initial user profile in Firestore after Clerk signup
+  async createUserProfile(userId: string, email: string, fullName: string) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       user = userCredential.user;
@@ -25,7 +25,7 @@ export const authService = {
         throw error;
       }
     }
-    
+
     try {
       // Create user document in Firestore
       await setDoc(doc(db, "users", user.uid), {
@@ -45,20 +45,21 @@ export const authService = {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }, { merge: true }); // merge: true prevents overwriting if they are just logging back in
-      
+
       return user;
     } catch (error: any) {
       console.error("Firestore Error:", error);
-      throw new Error(`Database Error: ${error.message}. Please check your Firestore Security Rules in the Firebase Console.`);
+      throw new Error(`Database Error: ${error.message}`);
     }
   },
 
+
   // Update User Profile (Safety Info, Contacts, etc.)
-  async updateUserProfile(data: any) {
+  async updateUserProfile(userId: string, data: any) {
     try {
       const user = auth.currentUser;
       if (!user) throw new Error("No user logged in");
-      
+
       const userRef = doc(db, "users", user.uid);
       await setDoc(userRef, {
         ...data,
@@ -70,11 +71,11 @@ export const authService = {
   },
 
   // Get User Profile (including trusted contacts)
-  async getUserProfile() {
+  async getUserProfile(userId: string) {
     try {
       const user = auth.currentUser;
       if (!user) return null;
-      
+
       const userDoc = await getDoc(doc(db, "users", user.uid));
       return userDoc.exists() ? userDoc.data() : null;
     } catch (error) {
@@ -97,6 +98,15 @@ export const authService = {
   async resetPassword(email: string) {
     try {
       await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Log out user
+  async logout() {
+    try {
+      await signOut(auth);
     } catch (error) {
       throw error;
     }
