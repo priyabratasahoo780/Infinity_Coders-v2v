@@ -32,6 +32,7 @@ const LOG_SOURCE = 'EmergencyService';
 export interface EmergencyDependencies {
   emergencyRepo: IEmergencyRepository;
   storageService: IStorageService;
+  evidenceService: any; // Using any here to avoid cyclic imports or just implement it
   guardianRepo: IGuardianRepository;
   notificationService: INotificationService;
   whatsAppService: IWhatsAppService;
@@ -118,7 +119,7 @@ export class EmergencyService {
     this.dispatchNotifications(guardians, event).catch(e => sosLogger.warn(LOG_SOURCE, 'Notification Dispatch Failed', e));
 
     // Step 4, 5, 13: Capture Audio/Video and Upload Evidence
-    this.collectAndUploadEvidence(event.id).catch(e => sosLogger.warn(LOG_SOURCE, 'Evidence Upload Failed', e));
+    this.collectAndUploadEvidence(event.id, guardians, event).catch(e => sosLogger.warn(LOG_SOURCE, 'Evidence Upload Failed', e));
 
     // Step 3: Start Live Location Tracking
     this.startLiveLocationTracking(guardians, event.id);
@@ -142,16 +143,37 @@ export class EmergencyService {
     sosLogger.info(LOG_SOURCE, 'Multi-channel notifications dispatched.', { results });
   }
 
-  private async collectAndUploadEvidence(eventId: string) {
-    sosLogger.info(LOG_SOURCE, 'Starting automated audio/video recording & upload sequence...');
-    // In a real app, this would trigger native modules to record. Here we simulate the upload of that recording.
-    const audioUrl = await this.deps.storageService.uploadEvidence(eventId, `audio_${Date.now()}.wav`, 'file:///tmp/recording.wav', 'audio');
-    
-    // Update the database session with the evidence URL
-    await this.deps.emergencyRepo.updateEmergencySession(eventId, {
-       // Ideally we would append to a list of URLs
-    });
-    sosLogger.info(LOG_SOURCE, `Evidence uploaded successfully to: ${audioUrl}`);
+  private async collectAndUploadEvidence(eventId: string, guardians: any[], event: EmergencyEvent) {
+    sosLogger.info(LOG_SOURCE, 'Starting automated audio recording & upload sequence...');
+    try {
+      const audioUri = await this.deps.evidenceService.recordEvidence(10000); // 10 seconds
+      if (audioUri) {
+        const audioUrl = await this.deps.storageService.uploadEvidence(
+          eventId, 
+          `audio_${Date.now()}.m4a`, 
+          audioUri, 
+          'audio'
+        );
+        
+        // Update the database session with the evidence URL
+        await this.deps.emergencyRepo.updateEmergencySession(eventId, {
+           // Append to a list of URLs in production
+        });
+        
+        sosLogger.info(LOG_SOURCE, `Evidence uploaded successfully to: ${audioUrl}`);
+        
+        // Send follow-up message with the evidence link
+        const msg = `🎙️ *Live Audio Evidence*\nSafeSphere AI has captured a 10-second audio clip from the emergency site.\nListen here: ${audioUrl}`;
+        
+        // Follow-up notification logic:
+        const phones = guardians.map(g => g.phone).filter(p => p);
+        if (phones.length > 0) {
+           await this.deps.whatsAppService.sendWhatsAppAlert(phones, { ...event, customMessage: msg } as any);
+        }
+      }
+    } catch (error) {
+      sosLogger.warn(LOG_SOURCE, 'Evidence Collection/Upload Failed', { error });
+    }
   }
 
   private startLiveLocationTracking(guardians: any[], eventId: string) {
