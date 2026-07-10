@@ -67,6 +67,7 @@ export class EmergencyService {
   private currentEmergency: EmergencyEvent | null = null;
   private emergencyCounter: number = 0;
   private trackingInterval: ReturnType<typeof setInterval> | null = null;
+  private dispatchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(deps: EmergencyDependencies, config?: Partial<EmergencyConfig>) {
     this.deps = deps;
@@ -115,11 +116,16 @@ export class EmergencyService {
     // Fetch Guardians
     const guardians = await this.deps.guardianRepo.getRegisteredGuardians('current_user'); // Hardcoded ID for now
 
-    // Step 9, 10, 11, 12: Trigger Future Notification Layers concurrently
-    this.dispatchNotifications(guardians, event).catch(e => sosLogger.warn(LOG_SOURCE, 'Notification Dispatch Failed', e));
+    // Add 10-second grace period
+    this.dispatchTimeout = setTimeout(() => {
+      if (this.currentEmergency && this.currentEmergency.status === EmergencyStatus.EMERGENCY) {
+        // Step 9, 10, 11, 12: Trigger Future Notification Layers concurrently
+        this.dispatchNotifications(guardians, event).catch(e => sosLogger.warn(LOG_SOURCE, 'Notification Dispatch Failed', e));
 
-    // Step 4, 5, 13: Capture Audio/Video and Upload Evidence
-    this.collectAndUploadEvidence(event.id, guardians, event).catch(e => sosLogger.warn(LOG_SOURCE, 'Evidence Upload Failed', e));
+        // Step 4, 5, 13: Capture Audio/Video and Upload Evidence
+        this.collectAndUploadEvidence(event.id, guardians, event).catch(e => sosLogger.warn(LOG_SOURCE, 'Evidence Upload Failed', e));
+      }
+    }, 10000);
 
     // Step 3: Start Live Location Tracking
     this.startLiveLocationTracking(guardians, event.id);
@@ -209,6 +215,12 @@ export class EmergencyService {
       if (this.trackingInterval) {
          clearInterval(this.trackingInterval);
          this.trackingInterval = null;
+      }
+      
+      if (this.dispatchTimeout) {
+         clearTimeout(this.dispatchTimeout);
+         this.dispatchTimeout = null;
+         sosLogger.info(LOG_SOURCE, 'Grace period active. Aborted sending emergency messages because user marked safe.');
       }
     }
   }
