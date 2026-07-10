@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 
 interface Contact {
   id: string;
@@ -26,6 +26,7 @@ interface Contact {
 export default function ProfileScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
+  const { user } = useUser();
   
   // Trusted contacts state
   const [contacts, setContacts] = useState<Contact[]>([
@@ -115,10 +116,14 @@ export default function ProfileScreen() {
         {/* User Card */}
         <View style={styles.profileHeader}>
           <View style={styles.profileAvatar}>
-            <Text style={styles.avatarText}>A</Text>
+            <Text style={styles.avatarText}>{user?.firstName?.[0] || 'U'}</Text>
           </View>
-          <Text style={styles.profileName}>Ananya Bhattacharya</Text>
-          <Text style={styles.profileDetails}>+91 98765 43210  •  ananya@email.com</Text>
+          <Text style={styles.profileName}>
+            {user?.firstName} {user?.lastName}
+          </Text>
+          <Text style={styles.profileDetails}>
+            {user?.primaryEmailAddress?.emailAddress || 'No email provided'}
+          </Text>
         </View>
 
         {/* Trusted Contacts Manager */}
