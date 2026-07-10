@@ -13,6 +13,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { sendMessageToAI } from '../../features/ai-assistant/services/aiAssistantService';
 
 interface Message {
   id: string;
@@ -48,13 +49,15 @@ export default function AssistantScreen() {
     }
   ]);
 
-  const handleSend = () => {
+
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
+    const currentText = inputText.trim();
     const userMsg: Message = {
       id: Date.now().toString(),
       sender: 'user',
-      text: inputText,
+      text: currentText,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
@@ -65,20 +68,41 @@ export default function AssistantScreen() {
     // Scroll to bottom
     setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Map existing messages to the format expected by the service
+      const history = messages.map(msg => ({
+        id: msg.id,
+        role: msg.sender === 'ai' ? 'assistant' : 'user',
+        content: msg.text,
+        timestamp: Date.now(),
+        status: 'sent' as any
+      }));
+
+      const response = await sendMessageToAI({
+        message: currentText,
+        history: history as any
+      });
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: "I understand your concern. I have analyzed your current location (Sector V) and determined it has a safe rating of 87/100. However, if you are walking, I recommend avoiding the shortcut alley next to the metro pillars as there are reports of poor lighting there.",
+        text: response.text,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: 'ai',
+        text: 'Sorry, I am having trouble connecting right now.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-      
       setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
-    }, 1500);
+    }
   };
 
   return (
