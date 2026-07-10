@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,6 +20,37 @@ export default function HomeScreen() {
   const router = useRouter();
   const [fakeCallVisible, setFakeCallVisible] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
+  const [currentAddress, setCurrentAddress] = useState('Fetching real location...');
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setCurrentAddress('Location permission denied');
+          return;
+        }
+
+        const location = await Location.getCurrentPositionAsync({});
+        const geocode = await Location.reverseGeocodeAsync({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+
+        if (geocode && geocode.length > 0) {
+          const place = geocode[0];
+          const formattedAddress = [place.name, place.street, place.city, place.region]
+            .filter(Boolean)
+            .join(', ');
+          setCurrentAddress(formattedAddress || 'Location found');
+        } else {
+          setCurrentAddress('Unknown Location');
+        }
+      } catch (error) {
+        setCurrentAddress('Unable to fetch location');
+      }
+    })();
+  }, []);
 
   const startFakeCall = () => {
     setFakeCallVisible(true);
@@ -31,7 +63,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style="dark" />
       
       <ScrollView 
@@ -41,7 +73,7 @@ export default function HomeScreen() {
         {/* Top Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerGreeting}>Hello, Ananya</Text>
+            <Text style={styles.headerGreeting}>Hello, Ananya (Voice Active)</Text>
             <Text style={styles.headerSub}>You are in a monitored safe area</Text>
           </View>
           <TouchableOpacity style={styles.notificationBtn}>
@@ -94,7 +126,7 @@ export default function HomeScreen() {
           {/* Map Info Bar */}
           <View style={styles.mapInfoBar}>
             <Feather name="map-pin" size={16} color="#6D28D9" />
-            <Text style={styles.mapAddress}>Sector 4, Salt Lake, Kolkata</Text>
+            <Text style={styles.mapAddress}>{currentAddress}</Text>
           </View>
         </View>
 
@@ -201,9 +233,7 @@ export default function HomeScreen() {
             <Feather name="arrow-right" size={20} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
-        
-        {/* Extra spacing for bottom elevated tab */}
-        <View style={{ height: 80 }} />
+
       </ScrollView>
 
       {/* Floating Action Button (FAB) for Gemini AI Assistant */}
@@ -297,6 +327,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 15,
+    paddingBottom: 110,
   },
   header: {
     flexDirection: 'row',
@@ -613,7 +644,7 @@ const styles = StyleSheet.create({
   },
   assistantFab: {
     position: 'absolute',
-    bottom: height * 0.1,
+    bottom: 110,
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',

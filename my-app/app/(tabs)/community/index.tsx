@@ -97,7 +97,7 @@ export default function CommunityScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style="dark" />
       
       {/* Header */}
@@ -202,7 +202,6 @@ export default function CommunityScreen() {
               </View>
             </TouchableOpacity>
           ))}
-          <View style={{ height: 120 }} />
         </ScrollView>
       ) : (
         /* Heatmap Map View */
@@ -251,9 +250,7 @@ export default function CommunityScreen() {
         <Feather name="edit-3" size={22} color="#FFFFFF" />
         <Text style={styles.fabText}>Report Incident</Text>
       </TouchableOpacity>
-      
-      {/* Space for bottom elevated tabs */}
-      <View style={{ height: 80 }} />
+
     </SafeAreaView>
   );
 }
@@ -315,6 +312,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 120,
     gap: 16,
   },
   card: {
@@ -494,7 +492,7 @@ const styles = StyleSheet.create({
   },
   fabReport: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 110,
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',

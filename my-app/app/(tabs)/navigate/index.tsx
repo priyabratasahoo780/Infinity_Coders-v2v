@@ -21,7 +21,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function NavigateScreen() {
   const router = useRouter();
-  const [selectedRoute, setSelectedRoute] = useState<'safest' | 'fastest'>('safest');
+  const [selectedRoute, setSelectedRoute] = useState<'recommended' | 'shorter'>('recommended');
   const [destination, setDestination] = useState('Salt Lake Central Park');
   const { location } = useLiveLocation();
   const [routes, setRoutes] = useState<RouteOption[]>([]);
@@ -62,7 +62,7 @@ export default function NavigateScreen() {
 
       setRoutes([
         {
-          id: 'safest',
+          id: 'recommended',
           title: 'Safest Route',
           theme: 'green',
           description: 'AI Recommended',
@@ -72,7 +72,7 @@ export default function NavigateScreen() {
           coordinates: generatePath(0.002)
         },
         {
-          id: 'fastest',
+          id: 'shorter',
           title: 'Direct Route',
           theme: 'orange',
           description: 'Fastest',
@@ -128,7 +128,7 @@ export default function NavigateScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style="dark" />
       
       {/* Route Map Header and Search inputs */}
@@ -197,9 +197,9 @@ export default function NavigateScreen() {
           <TouchableOpacity 
             style={[
               styles.routeCard, 
-              selectedRoute === 'safest' && styles.activeRouteCard
+              selectedRoute === 'recommended' && styles.activeRouteCard
             ]}
-            onPress={() => setSelectedRoute('safest')}
+            onPress={() => setSelectedRoute('recommended')}
           >
             <View style={styles.routeHeader}>
               <View style={styles.badgeSafest}>
@@ -229,9 +229,9 @@ export default function NavigateScreen() {
           <TouchableOpacity 
             style={[
               styles.routeCard, 
-              selectedRoute === 'fastest' && styles.activeRouteCard
+              selectedRoute === 'shorter' && styles.activeRouteCard
             ]}
-            onPress={() => setSelectedRoute('fastest')}
+            onPress={() => setSelectedRoute('shorter')}
           >
             <View style={styles.routeHeader}>
               <View style={styles.badgeFastest}>
@@ -268,9 +268,7 @@ export default function NavigateScreen() {
           <Feather name="chevron-right" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-      
-      {/* Tab bar spacers */}
-      <View style={{ height: 80 }} />
+
     </SafeAreaView>
   );
 }
@@ -417,7 +415,7 @@ const styles = StyleSheet.create({
   },
   bottomCardWrapper: {
     position: 'absolute',
-    bottom: height * 0.08,
+    bottom: 90,
     left: 0,
     right: 0,
     backgroundColor: '#FFFFFF',

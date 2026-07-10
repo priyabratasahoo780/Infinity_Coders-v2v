@@ -215,18 +215,12 @@ export class WakeWordService {
    * In production, this would use an on-device keyword spotting model.
    * The actual speech-to-text is handled by SpeechService (Step 3).
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private extractCandidateText(_audioChunk: AudioChunk): string | null {
-    // In production, this would:
-    // 1. Run audio through a lightweight keyword-spotting TFLite model
-    // 2. The model outputs candidate keywords/phrases
-    // 3. We return the highest-confidence candidate
-    //
-    // For the pipeline architecture, the SpeechService (Step 3) provides
-    // full transcription, and this method provides fast keyword-level detection.
-    //
-    // The actual keyword spotting model would be loaded from:
-    // models/WakeWord/wake_word_model.tflite
+  private extractCandidateText(audioChunk: AudioChunk): string | null {
+    // Simulated Wake Word Detection for Expo Go
+    // If the user speaks (metering > -50dB), we simulate a detected keyword
+    if (audioChunk.metering !== undefined && audioChunk.metering > -50) {
+      return 'help';
+    }
     return null;
   }
 

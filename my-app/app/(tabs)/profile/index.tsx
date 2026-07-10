@@ -102,7 +102,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style="dark" />
       
       <ScrollView 
@@ -277,7 +277,6 @@ export default function ProfileScreen() {
 
         {/* Version spacer */}
         <Text style={styles.versionText}>SafeSphere AI • Version 1.0.0 (Production MVP)</Text>
-        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -290,6 +289,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 100,
   },
   profileHeader: {
     alignItems: 'center',

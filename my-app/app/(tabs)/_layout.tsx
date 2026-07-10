@@ -2,9 +2,19 @@ import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useVoiceDetection } from '../../features/voice-sos/hooks/useVoiceDetection';
 
 export default function TabLayout() {
   const router = useRouter();
+
+  // Globally initialize Voice/Sound SOS detection
+  const { isEmergency } = useVoiceDetection({ autoStart: true });
+
+  React.useEffect(() => {
+    if (isEmergency) {
+      router.push('/sos/active');
+    }
+  }, [isEmergency]);
 
   return (
     <Tabs
@@ -60,6 +70,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ai-assistant/index"
         options={{
+          href: null,
           title: 'AI Assistant',
           tabBarIcon: ({ color, focused }) => (
             <Feather name="message-circle" size={22} color={color} style={focused && styles.activeIconGlow} />

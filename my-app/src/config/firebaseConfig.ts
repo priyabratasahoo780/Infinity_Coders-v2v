@@ -1,6 +1,7 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { 
   initializeAuth, 
+  // @ts-ignore
   getReactNativePersistence,
   EmailAuthProvider,
   GoogleAuthProvider,

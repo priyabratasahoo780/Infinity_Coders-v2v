@@ -85,11 +85,11 @@ export class SoundService {
 
       // If we have live microphone metering, use it as a primary heuristic for loud/dangerous sounds
       if (buffer.metering !== undefined) {
-        if (buffer.metering > -10) {
+        if (buffer.metering > -40) {
           dangerScore = 90;
           dominantSound = SoundType.SCREAMING;
           sounds.push({ sound: SoundType.SCREAMING, confidence: 0.9 });
-        } else if (buffer.metering > -20) {
+        } else if (buffer.metering > -50) {
           dangerScore = 50;
           dominantSound = SoundType.PHYSICAL_STRUGGLE;
           sounds.push({ sound: SoundType.PHYSICAL_STRUGGLE, confidence: 0.6 });

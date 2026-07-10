@@ -19,7 +19,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
       
       {/* Top Header Row */}

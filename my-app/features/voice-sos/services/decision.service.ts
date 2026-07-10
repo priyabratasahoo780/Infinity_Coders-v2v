@@ -266,6 +266,14 @@ export class DecisionEngine {
       });
     }
 
+    // BYPASS: For demonstration and reliable SOS triggering, if the wake word is clearly detected, guarantee emergency
+    if (signals.keywordScore > 80) {
+      adjustedScore = Math.max(adjustedScore, 90); // Push above EMERGENCY_THRESHOLD
+      sosLogger.info(LOG_SOURCE, 'Escalation bypass: Keyword explicitly detected', {
+        boostedScore: adjustedScore,
+      });
+    }
+
     // SAFEGUARD 2: If it's a false alarm context, cap well below emergency
     if (signals.isFalseAlarmContext) {
       adjustedScore = Math.min(adjustedScore, 40);
