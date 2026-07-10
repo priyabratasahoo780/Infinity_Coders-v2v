@@ -26,7 +26,7 @@ export default function NewJourneyScreen() {
     // Navigate to active journey page
     const randomId = Math.floor(Math.random() * 9000) + 1000;
     router.replace({
-      pathname: `/journey/${randomId}`,
+      pathname: `/journey/${randomId}` as any,
       params: { destination, duration }
     });
   };

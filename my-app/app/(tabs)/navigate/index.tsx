@@ -51,7 +51,7 @@ export default function NavigateScreen() {
                   editable={false}
                   placeholderTextColor="#9CA3AF"
                 />
-                <Feather name="my-location" size={16} color="#6D28D9" />
+                <MaterialCommunityIcons name="crosshairs-gps" size={16} color="#6D28D9" />
               </View>
               
               <View style={styles.divider} />
