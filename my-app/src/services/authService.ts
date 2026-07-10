@@ -1,10 +1,11 @@
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithCredential,
   GoogleAuthProvider,
-  signInWithPhoneNumber
+  signInWithPhoneNumber,
+  signOut
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../config/firebaseConfig";
@@ -13,8 +14,22 @@ export const authService = {
   // Create initial user profile in Firestore after Clerk signup
   async createUserProfile(userId: string, email: string, fullName: string) {
     try {
-      await setDoc(doc(db, "users", userId), {
-        uid: userId,
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      user = userCredential.user;
+    } catch (error: any) {
+      if (error.code === 'auth/email-already-in-use') {
+        // Fallback: log the user in if the account was already created but they got stuck
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        user = userCredential.user;
+      } else {
+        throw error;
+      }
+    }
+
+    try {
+      // Create user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
         fullName,
         email,
         phone: "",
@@ -29,8 +44,9 @@ export const authService = {
         trustedContacts: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }, { merge: true });
-      return true;
+      }, { merge: true }); // merge: true prevents overwriting if they are just logging back in
+
+      return user;
     } catch (error: any) {
       console.error("Firestore Error:", error);
       throw new Error(`Database Error: ${error.message}`);
@@ -41,9 +57,10 @@ export const authService = {
   // Update User Profile (Safety Info, Contacts, etc.)
   async updateUserProfile(userId: string, data: any) {
     try {
-      if (!userId) throw new Error("No user ID provided");
-      
-      const userRef = doc(db, "users", userId);
+      const user = auth.currentUser;
+      if (!user) throw new Error("No user logged in");
+
+      const userRef = doc(db, "users", user.uid);
       await setDoc(userRef, {
         ...data,
         updatedAt: new Date().toISOString(),
@@ -56,9 +73,10 @@ export const authService = {
   // Get User Profile (including trusted contacts)
   async getUserProfile(userId: string) {
     try {
-      if (!userId) return null;
-      
-      const userDoc = await getDoc(doc(db, "users", userId));
+      const user = auth.currentUser;
+      if (!user) return null;
+
+      const userDoc = await getDoc(doc(db, "users", user.uid));
       return userDoc.exists() ? userDoc.data() : null;
     } catch (error) {
       console.error("Error fetching user profile:", error);
@@ -80,6 +98,15 @@ export const authService = {
   async resetPassword(email: string) {
     try {
       await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Log out user
+  async logout() {
+    try {
+      await signOut(auth);
     } catch (error) {
       throw error;
     }

@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth, useUser } from '@clerk/clerk-expo';
+import { authService } from '../../../src/services/authService';
 
 interface Contact {
   id: string;
@@ -25,12 +25,10 @@ interface Contact {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { signOut } = useAuth();
-  const { user } = useUser();
-  
-  // Trusted contacts state
+
   const [contacts, setContacts] = useState<Contact[]>([]);
-  
+  const [userProfile, setUserProfile] = useState<any>(null);
+
   // New contact form state
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
@@ -46,9 +44,14 @@ export default function ProfileScreen() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const storedContacts = await AsyncStorage.getItem('@safesphere_contacts');
-        if (storedContacts) setContacts(JSON.parse(storedContacts));
-        
+        const profile = await authService.getUserProfile();
+        if (profile) {
+          setUserProfile(profile);
+          if (profile.trustedContacts) {
+            setContacts(profile.trustedContacts);
+          }
+        }
+
         const settings = await AsyncStorage.getItem('@safesphere_settings');
         if (settings) {
           const parsed = JSON.parse(settings);
@@ -66,7 +69,9 @@ export default function ProfileScreen() {
 
   // Save contacts
   useEffect(() => {
-    AsyncStorage.setItem('@safesphere_contacts', JSON.stringify(contacts));
+    if (userProfile) {
+      authService.updateUserProfile({ trustedContacts: contacts }).catch(e => console.log('Sync err', e));
+    }
   }, [contacts]);
 
   // Save settings
@@ -98,15 +103,19 @@ export default function ProfileScreen() {
   };
 
   const handleLogOut = async () => {
-    await signOut();
-    router.replace('/(auth)/sign-in');
+    try {
+      await authService.logout();
+      router.replace('/(auth)/sign-in');
+    } catch (e) {
+      Alert.alert('Log out failed', 'Could not log out.');
+    }
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style="dark" />
-      
-      <ScrollView 
+
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -114,14 +123,14 @@ export default function ProfileScreen() {
         <View style={styles.profileHeader}>
           <View style={styles.profileAvatar}>
             <Text style={styles.avatarText}>
-              {`${user?.firstName?.[0] || ''}${user?.lastName?.[0] || ''}`.toUpperCase() || 'U'}
+              {userProfile?.fullName ? userProfile.fullName.charAt(0).toUpperCase() : 'U'}
             </Text>
           </View>
-          <Text style={styles.profileName}>
-            {user?.firstName} {user?.lastName}
-          </Text>
+          <Text style={styles.profileName}>{userProfile?.fullName || 'User Profile'}</Text>
           <Text style={styles.profileDetails}>
-            {user?.primaryEmailAddress?.emailAddress || 'No email provided'}
+            {(userProfile?.phone || userProfile?.email) ?
+              `${userProfile?.phone || 'No phone'}  •  ${userProfile?.email || 'No email'}`
+              : 'Add contact details'}
           </Text>
         </View>
 
@@ -130,7 +139,7 @@ export default function ProfileScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Trusted Guardians</Text>
             {!isAdding ? (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.addBtn}
                 onPress={() => setIsAdding(true)}
               >
@@ -138,7 +147,7 @@ export default function ProfileScreen() {
                 <Text style={styles.addBtnText}>Add</Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.addBtn}
                 onPress={() => setIsAdding(false)}
               >
@@ -184,7 +193,7 @@ export default function ProfileScreen() {
                     <Text style={styles.contactPhone}>{contact.phone}</Text>
                   </View>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.deleteBtn}
                   onPress={() => handleDeleteContact(contact.id)}
                 >
@@ -197,7 +206,7 @@ export default function ProfileScreen() {
 
         {/* Emergency Triggers Settings */}
         <Text style={styles.sectionLabel}>Emergency Settings</Text>
-        
+
         <View style={styles.sectionCard}>
           {/* Shake Trigger */}
           <View style={styles.settingRow}>
@@ -212,7 +221,7 @@ export default function ProfileScreen() {
               thumbColor={shakeTrigger ? '#6D28D9' : '#F3F4F6'}
             />
           </View>
-          
+
           <View style={styles.separator} />
 
           {/* SMS Fallback */}
@@ -267,7 +276,7 @@ export default function ProfileScreen() {
           <View style={styles.separator} />
 
           {/* AI Safety Analysis */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.settingRow}
             onPress={() => router.push('/(drawer)/(tabs)/safety-analysis')}
           >

@@ -22,6 +22,7 @@ import { MockNotificationService } from '../../features/guardian/services/MockNo
 import { EmergencyStatus, NetworkStatus } from '../../features/emergency/types/emergency.types';
 import { SupportedLanguage } from '../../features/voice-sos/types/voice.types';
 import { authService } from '../../src/services/authService';
+import { ServiceLocator } from '../../features/voice-sos/utils/ServiceLocator';
 
 const { width } = Dimensions.get('window');
 
@@ -44,51 +45,7 @@ export default function ActiveSosScreen() {
 
   const triggerManualSOS = async () => {
     try {
-      const emergencyService = new EmergencyService({
-        emergencyRepo: new FirebaseEmergencyRepository(),
-        storageService: new FirebaseStorageService(),
-        evidenceService: new AudioEvidenceService(),
-        guardianRepo: new FirebaseGuardianRepository(),
-        notificationService: new MockNotificationService(),
-        whatsAppService: {
-          sendWhatsAppAlert: async (phones: string[], event: any) => {
-            if (!phones || phones.length === 0) return;
-            const profile = await authService.getUserProfile();
-            const userName = profile?.name ? profile.name.toUpperCase() : 'YOUR LOVED ONE';
-            const timeStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-            const locStr = event.location ? `${event.location.latitude},${event.location.longitude}` : 'Unknown';
-            const mapLink = event.location ? `https://maps.google.com/?q=${locStr}` : 'Location unavailable';
-            let msg = `🚨 EMERGENCY ALERT FROM ${userName} 🚨\n\nI need help immediately! My live location and safety details are being shared with you.\n\n📍 *Location*: ${mapLink}\n⏰ *Time*: ${timeStr}\n🔋 *Battery*: ${event.battery !== undefined ? event.battery + '%' : 'Unknown'}\n📶 *Network*: ${event.network || 'Unknown'}\n⚠️ *Triggered By*: SafeSphere Manual SOS\n\nPlease contact me or the authorities immediately!`;
-            if (event.customMessage) msg = event.customMessage;
-
-            const phone = phones[0].replace(/[^0-9]/g, '');
-            if (!phone) return;
-            const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-            try { await Linking.openURL(url); } catch (e) { }
-          }
-        },
-        smsService: {
-          sendOfflineSMS: async (phones: string[], event: any) => {
-            if (!phones || phones.length === 0) return;
-            const validPhones = phones.map(p => p.replace(/[^0-9]/g, '')).filter(p => p.length > 0);
-            if (validPhones.length === 0) return;
-
-            const profile = await authService.getUserProfile();
-            const userName = profile?.name ? profile.name.toUpperCase() : 'YOUR LOVED ONE';
-            const timeStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-            const locStr = event.location ? `${event.location.latitude},${event.location.longitude}` : 'Unknown';
-            const mapLink = event.location ? `https://maps.google.com/?q=${locStr}` : 'Location unavailable';
-            let msg = `🚨 EMERGENCY ALERT FROM ${userName} 🚨\nHelp needed! Location: ${mapLink}\nTime: ${timeStr}\nBattery: ${event.battery !== undefined ? event.battery + '%' : 'Unknown'}\nTriggered By: SafeSphere Manual SOS`;
-            if (event.customMessage) msg = event.customMessage;
-
-            if (Platform.OS === 'web') return;
-            const phoneList = Platform.OS === 'ios' ? validPhones.join(',') : validPhones.join(';');
-            const url = `sms:${phoneList}?body=${encodeURIComponent(msg)}`;
-            try { await Linking.openURL(url); } catch (e) { }
-          }
-        },
-        emergencyCallingService: { triggerAutomatedCall: async () => { } }
-      });
+      const emergencyService = ServiceLocator.getInstance().emergency;
 
       await emergencyService.triggerEmergency({
         decision: { shouldTrigger: true, confidenceScore: 100, status: EmergencyStatus.EMERGENCY, reason: 'Manual SOS Button Pressed', timestamp: Date.now(), signals: {} as any, weights: {} as any },
@@ -116,6 +73,11 @@ export default function ActiveSosScreen() {
   }, []);
 
   const handleCancel = () => {
+    import('react-native').then(({ DeviceEventEmitter }) => {
+      DeviceEventEmitter.emit('stop_sos');
+    });
+    ServiceLocator.getInstance().emergency.resolveEmergency();
+    ServiceLocator.getInstance().mic.stop();
     // Return back to dashboard
     router.replace('/(drawer)/(tabs)/home');
   };

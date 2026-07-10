@@ -35,6 +35,7 @@ export class MicrophoneService {
   private isActive: boolean = false;
   private chunkCallbacks: OnAudioChunkCallback[] = [];
   private processingInterval: ReturnType<typeof setInterval> | null = null;
+  private simulatorInterval: ReturnType<typeof setInterval> | null = null;
 
   // Internal recording reference (expo-av Recording object)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,10 +97,12 @@ export class MicrophoneService {
   async stop(): Promise<void> {
     if (!this.isActive) return;
 
-    sosLogger.info(LOG_SOURCE, 'Stopping microphone capture');
-
-    // Stop the chunk emitter
+    // Stop the chunk emitter and simulated audio
     this.stopChunkEmitter();
+    if (this.simulatorInterval) {
+      clearInterval(this.simulatorInterval);
+      this.simulatorInterval = null;
+    }
 
     // Stop the recording
     try {
@@ -115,6 +118,7 @@ export class MicrophoneService {
 
     // SECURITY: Zero out the buffer
     this.clearBuffer();
+    this.lastMetering = -160; // Reset metering to prevent false triggers on restart
 
     this.isActive = false;
 
@@ -287,7 +291,7 @@ export class MicrophoneService {
     // Update buffer metadata and metering
     this.buffer.lastUpdatedAt = Date.now();
     this.buffer.hasData = true;
-    
+
     if (status.metering !== undefined) {
       this.lastMetering = status.metering;
     }
@@ -312,10 +316,10 @@ export class MicrophoneService {
       const chunk: AudioChunk = {
         samples: this.buffer.samples
           ? new Float32Array(
-              this.buffer.samples.buffer,
-              Math.max(0, this.buffer.samples.length - chunkSamples) * 4,
-              Math.min(chunkSamples, this.buffer.samples.length)
-            )
+            this.buffer.samples.buffer,
+            Math.max(0, this.buffer.samples.length - chunkSamples) * 4,
+            Math.min(chunkSamples, this.buffer.samples.length)
+          )
           : new Float32Array(0),
         sampleRate: this.config.sampleRate,
         timestamp: Date.now(),
@@ -353,7 +357,11 @@ export class MicrophoneService {
   private startSimulatedAudio(): void {
     sosLogger.debug(LOG_SOURCE, 'Starting simulated audio input');
 
-    this.processingInterval = setInterval(() => {
+    if (this.simulatorInterval) {
+      clearInterval(this.simulatorInterval);
+    }
+
+    this.simulatorInterval = setInterval(() => {
       if (!this.isActive || !this.buffer.samples) return;
 
       // Generate simulated ambient noise (very low amplitude)
