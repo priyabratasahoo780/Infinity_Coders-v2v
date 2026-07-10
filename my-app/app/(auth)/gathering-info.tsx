@@ -16,8 +16,10 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { authService } from '../../src/services/authService';
+import { GOOGLE_CLIENT_IDS } from '../../src/config/firebaseConfig';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -73,8 +75,10 @@ export default function GatheringInfoScreen() {
     }
   };
 
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: '719972551474-f2qbq105sfuo0oo5ulo7sqvi2hca0g3f.apps.googleusercontent.com',
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: GOOGLE_CLIENT_IDS.webClientId,
+    responseType: 'id_token',
+    redirectUri: AuthSession.makeRedirectUri({ useProxy: true }),
   });
 
   React.useEffect(() => {
@@ -89,16 +93,7 @@ export default function GatheringInfoScreen() {
   }, [response]);
 
   const handleGoogleSignIn = async () => {
-    if (Platform.OS === 'web') {
-      try {
-        await authService.loginWithGoogleWeb();
-        router.replace('/(tabs)/home');
-      } catch (error: any) {
-        Alert.alert('Google Sign-In Error', error.message);
-      }
-    } else {
-      promptAsync();
-    }
+    promptAsync();
   };
 
   return (
@@ -286,10 +281,6 @@ export default function GatheringInfoScreen() {
               <Text style={styles.socialButtonText}>Sign up with Google</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Coming Soon', 'Apple Sign-In requires an active Apple Developer account to configure.')}>
-              <FontAwesome5 name="apple" size={20} color="#000000" style={styles.socialIcon} />
-              <Text style={styles.socialButtonText}>Sign up with Apple</Text>
-            </TouchableOpacity>
 
             <TouchableOpacity style={styles.socialButton} onPress={() => router.push('/(auth)/otp-verify')}>
               <Feather name="phone" size={18} color="#6D28D9" style={styles.socialIcon} />

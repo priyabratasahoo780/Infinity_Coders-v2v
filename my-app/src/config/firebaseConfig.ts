@@ -36,11 +36,18 @@ const phoneProvider = new PhoneAuthProvider(auth);
 // Initialize Cloud Firestore
 const db = getFirestore(app);
 
+// Centralized Google OAuth Client ID for Expo Auth Session
+const GOOGLE_CLIENT_IDS = {
+  webClientId: "719972551474-f2qbq105sfuo0oo5ulo7sqvi2hca0g3f.apps.googleusercontent.com"
+};
+
 export { 
+  firebaseConfig,
   app, 
   auth, 
   db,
   emailProvider,
   googleProvider,
-  phoneProvider
+  phoneProvider,
+  GOOGLE_CLIENT_IDS
 };

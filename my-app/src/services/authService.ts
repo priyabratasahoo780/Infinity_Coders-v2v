@@ -3,7 +3,6 @@ import {
   signInWithEmailAndPassword, 
   sendPasswordResetEmail,
   signInWithCredential,
-  signInWithPopup,
   GoogleAuthProvider,
   signInWithPhoneNumber
 } from "firebase/auth";
@@ -94,29 +93,91 @@ export const authService = {
     try {
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
-      return userCredential.user;
-    } catch (error) {
-      throw error;
+      const user = userCredential.user;
+
+      // Check if user document already exists in Firestore
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // Create user document in Firestore with default values
+        await setDoc(userRef, {
+          uid: user.uid,
+          fullName: user.displayName || "Google User",
+          email: user.email || "",
+          phone: user.phoneNumber || "",
+          age: "",
+          gender: "",
+          safetyPreferences: {
+            pushEnabled: true,
+            smsEnabled: true,
+            emailEnabled: true,
+            medicalConditions: ""
+          },
+          trustedContacts: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        // Document exists, update updatedAt timestamp
+        await setDoc(userRef, {
+          updatedAt: new Date().toISOString(),
+        }, { merge: true });
+      }
+
+      return user;
+    } catch (error: any) {
+      console.error("Google Sign-In DB Error:", error);
+      throw new Error(`Google Authentication succeeded, but database setup failed: ${error.message}`);
     }
   },
 
-  // Google Sign In for Web SDK
-  async loginWithGoogleWeb() {
-    // Import googleProvider dynamically or it is available from config
-    const { googleProvider } = require("../config/firebaseConfig");
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      return result.user;
-    } catch (error) {
-      throw error;
-    }
-  },
 
   // Phone Auth
   async sendOtp(phoneNumber: string, appVerifier: any) {
     try {
       const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
       return confirmationResult;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async verifyOtp(confirmationResult: any, code: string) {
+    try {
+      const result = await confirmationResult.confirm(code);
+      const user = result.user;
+
+      // Check if user document already exists in Firestore
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // Create user document in Firestore with default values
+        await setDoc(userRef, {
+          uid: user.uid,
+          phone: user.phoneNumber || "",
+          fullName: "Phone User",
+          email: "",
+          age: "",
+          gender: "",
+          safetyPreferences: {
+            pushEnabled: true,
+            smsEnabled: true,
+            emailEnabled: true,
+            medicalConditions: ""
+          },
+          trustedContacts: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        await setDoc(userRef, {
+          updatedAt: new Date().toISOString(),
+        }, { merge: true });
+      }
+
+      return user;
     } catch (error) {
       throw error;
     }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -17,9 +17,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Feather, Ionicons, FontAwesome } from '@expo/vector-icons';
 import { authService } from '../../src/services/authService';
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import { firebaseConfig } from '../../src/config/firebaseConfig';
 
 export default function OtpVerifyScreen() {
   const router = useRouter();
+  const recaptchaVerifier = useRef(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -35,7 +38,7 @@ export default function OtpVerifyScreen() {
       }
       setLoading(true);
       try {
-        await confirmationResult.confirm(otpCode);
+        await authService.verifyOtp(confirmationResult, otpCode);
         router.replace('/(tabs)/home');
       } catch (error: any) {
         Alert.alert('Verification Failed', error.message);
@@ -49,9 +52,7 @@ export default function OtpVerifyScreen() {
       }
       setLoading(true);
       try {
-        // Note: For Web SDK, you typically need a RecaptchaVerifier passed here.
-        // authService.sendOtp expects an appVerifier. We pass null for now or you can wire up a recaptcha container.
-        const result = await authService.sendOtp(phoneNumber, undefined);
+        const result = await authService.sendOtp(phoneNumber, recaptchaVerifier.current);
         setConfirmationResult(result);
         setOtpSent(true);
       } catch (error: any) {
@@ -64,6 +65,10 @@ export default function OtpVerifyScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVerifier}
+        firebaseConfig={firebaseConfig}
+      />
       <StatusBar style="dark" />
       
       {/* Top Header Row */}
@@ -203,11 +208,6 @@ export default function OtpVerifyScreen() {
               <Text style={styles.socialButtonText}>Continue with Google</Text>
             </TouchableOpacity>
 
-            {/* Apple */}
-            <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Coming Soon', 'Apple Sign-In requires an active Apple Developer account to configure.')}>
-              <FontAwesome name="apple" size={18} color="#000000" style={styles.socialIcon} />
-              <Text style={styles.socialButtonText}>Continue with Apple</Text>
-            </TouchableOpacity>
 
             {/* Phone */}
             <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Phone Login', 'You are already in the Phone Login flow.')}>
