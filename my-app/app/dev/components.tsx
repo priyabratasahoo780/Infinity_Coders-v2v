@@ -27,7 +27,7 @@ export default function DevComponentsScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={[styles.scrollContent, { flex: 1 }]}>
         <Text style={styles.introText}>
           SafeSphere AI Design System Primitives & Tokens (Clean Architecture Preview)
         </Text>
@@ -132,7 +132,7 @@ export default function DevComponentsScreen() {
         </View>
 
         <View style={{ height: 40 }} />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

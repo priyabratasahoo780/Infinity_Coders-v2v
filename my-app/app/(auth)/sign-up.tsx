@@ -9,17 +9,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Feather, Ionicons, FontAwesome } from '@expo/vector-icons';
-import { authService } from '../../src/services/authService';
-import { GOOGLE_CLIENT_IDS } from '../../src/config/firebaseConfig';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { useOAuth, useSignUp } from '@clerk/clerk-expo';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import * as AuthSession from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -29,10 +27,14 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const { signUp, isLoaded } = useSignUp();
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
 
   const handleSignUp = () => {
     if (!email || !password || !fullName) {
-      alert("Please fill in all fields");
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
     // Navigate to gathering info screen with pre-filled params
@@ -42,25 +44,16 @@ export default function SignUpScreen() {
     });
   };
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_CLIENT_IDS.webClientId,
-    responseType: 'id_token',
-    redirectUri: AuthSession.makeRedirectUri({ useProxy: true }),
-  });
-
-  React.useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      authService.loginWithGoogleCredential(id_token).then(() => {
-        router.replace('/(tabs)/home');
-      }).catch(error => {
-        Alert.alert('Google Sign-In Error', error.message);
-      });
-    }
-  }, [response]);
-
   const handleGoogleSignIn = async () => {
-    promptAsync();
+    try {
+      const { createdSessionId, setActive } = await startOAuthFlow();
+      if (createdSessionId) {
+        await setActive!({ session: createdSessionId });
+        // InitialLayout ka useEffect redirect karega
+      }
+    } catch (error: any) {
+      Alert.alert('Google Sign-In Error', error.errors?.[0]?.message || error.message);
+    }
   };
 
   return (
@@ -118,15 +111,6 @@ export default function SignUpScreen() {
             >
               <Feather name="user-plus" size={16} color="#F34E62" style={styles.tabIcon} />
               <Text style={[styles.tabText, styles.activeTabText]}>Sign Up</Text>
-            </TouchableOpacity>
-
-            {/* Login with OTP Tab */}
-            <TouchableOpacity
-              style={styles.tab}
-              onPress={() => router.push('/(auth)/otp-verify')}
-            >
-              <Feather name="smartphone" size={16} color="#6B7280" style={styles.tabIcon} />
-              <Text style={styles.tabText}>Login with OTP</Text>
             </TouchableOpacity>
           </View>
 
@@ -195,9 +179,16 @@ export default function SignUpScreen() {
               style={styles.primaryButton}
               activeOpacity={0.9}
               onPress={handleSignUp}
+              disabled={loading}
             >
-              <Text style={styles.primaryButtonText}>Sign Up</Text>
-              <Feather name="chevron-right" size={20} color="#FFFFFF" style={styles.buttonArrow} />
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Text style={styles.primaryButtonText}>Sign Up</Text>
+                  <Feather name="chevron-right" size={20} color="#FFFFFF" style={styles.buttonArrow} />
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -214,13 +205,6 @@ export default function SignUpScreen() {
             <TouchableOpacity style={styles.socialButton} onPress={handleGoogleSignIn}>
               <Ionicons name="logo-google" size={18} color="#EA4335" style={styles.socialIcon} />
               <Text style={styles.socialButtonText}>Continue with Google</Text>
-            </TouchableOpacity>
-
-
-            {/* Phone */}
-            <TouchableOpacity style={styles.socialButton} onPress={() => router.push('/(auth)/otp-verify')}>
-              <Feather name="phone" size={18} color="#6B21A8" style={styles.socialIcon} />
-              <Text style={styles.socialButtonText}>Continue with Phone</Text>
             </TouchableOpacity>
           </View>
 
@@ -448,4 +432,3 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
-

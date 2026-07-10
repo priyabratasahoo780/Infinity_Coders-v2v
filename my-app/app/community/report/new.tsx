@@ -56,7 +56,7 @@ export default function NewReportScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={[styles.scrollContent, { flex: 1 }]}>
         {/* Category selector */}
         <Text style={styles.sectionLabel}>Select Incident Category</Text>
         <View style={styles.chipsContainer}>
@@ -143,7 +143,7 @@ export default function NewReportScreen() {
           <Feather name="send" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
           <Text style={styles.submitBtnText}>Submit Safety Report</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

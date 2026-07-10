@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
   Alert,
@@ -15,12 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Feather, Ionicons, FontAwesome } from '@expo/vector-icons';
-import { authService } from '../../src/services/authService';
-import { GOOGLE_CLIENT_IDS } from '../../src/config/firebaseConfig';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { useOAuth, useSignIn, useAuth, useClerk } from '@clerk/clerk-expo';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import * as AuthSession from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -29,70 +25,64 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
+
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const { isSignedIn } = useAuth();
+  const { signOut } = useClerk();
+
+  // Agar session pehle se exist karti hai toh seedha home bhejo
+  useEffect(() => {
+    if (isSignedIn) {
+      router.replace('/(drawer)/(tabs)/home');
+    }
+  }, [isSignedIn]);
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter your email and password');
       return;
     }
+    if (!isLoaded) return;
+
     setLoading(true);
     try {
-      await authService.login(email, password);
-      router.replace('/(drawer)/(tabs)/home');
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        // InitialLayout ka useEffect redirect karega - yahan kuch nahi karna
+      } else {
+        Alert.alert('Login Failed', 'Please check your credentials and try again.');
+      }
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message);
+      Alert.alert('Login Failed', error.errors?.[0]?.message || error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = () => {
     if (!email) {
       Alert.alert('Reset Password', 'Please enter your email address first.');
       return;
     }
-    try {
-      await authService.resetPassword(email);
-      Alert.alert('Success', 'Password reset email sent. Check your inbox.');
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
-    }
+    Alert.alert('Reset Password', 'Please use the Clerk dashboard or contact support to reset your password.');
   };
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_CLIENT_IDS.webClientId,
-    responseType: 'id_token',
-    redirectUri: AuthSession.makeRedirectUri({ useProxy: true }),
-  });
-
-  React.useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      authService.loginWithGoogleCredential(id_token).then(() => {
-        router.replace('/(drawer)/(tabs)/home');
-      }).catch(error => {
-        Alert.alert('Google Sign-In Error', error.message);
-      });
-    }
-  }, [response]);
-
   const handleGoogleSignIn = async () => {
-<<<<<<< HEAD
-    promptAsync();
-=======
-    if (Platform.OS === 'web') {
-      try {
-        await authService.loginWithGoogleWeb();
-        router.replace('/(drawer)/(tabs)/home');
-      } catch (error: any) {
-        Alert.alert('Google Sign-In Error', error.message);
+    try {
+      const { createdSessionId, setActive: setActiveSession } = await startOAuthFlow();
+      if (createdSessionId) {
+        await setActiveSession!({ session: createdSessionId });
+        // InitialLayout ka useEffect redirect karega
       }
-    } else {
-      promptAsync();
+    } catch (error: any) {
+      Alert.alert('Google Sign-In Error', error.errors?.[0]?.message || error.message);
     }
->>>>>>> 767770065d5bf6eeab4a93ca7a284152a5e2e074
   };
 
   return (
@@ -116,11 +106,7 @@ export default function SignInScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
+        <View style={[styles.scrollContent, { flex: 1 }]}>
           {/* Logo and Brand Header */}
           <View style={styles.headerContainer}>
             <Image
@@ -150,15 +136,6 @@ export default function SignInScreen() {
             >
               <Feather name="user-plus" size={16} color="#6B7280" style={styles.tabIcon} />
               <Text style={styles.tabText}>Sign Up</Text>
-            </TouchableOpacity>
-
-            {/* Login with OTP Tab */}
-            <TouchableOpacity
-              style={styles.tab}
-              onPress={() => router.push('/(auth)/otp-verify')}
-            >
-              <Feather name="smartphone" size={16} color="#6B7280" style={styles.tabIcon} />
-              <Text style={styles.tabText}>Login with OTP</Text>
             </TouchableOpacity>
           </View>
 
@@ -217,9 +194,16 @@ export default function SignInScreen() {
               style={styles.primaryButton}
               activeOpacity={0.9}
               onPress={handleLogin}
+              disabled={loading}
             >
-              <Text style={styles.primaryButtonText}>Log In</Text>
-              <Feather name="chevron-right" size={20} color="#FFFFFF" style={styles.buttonArrow} />
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Text style={styles.primaryButtonText}>Log In</Text>
+                  <Feather name="chevron-right" size={20} color="#FFFFFF" style={styles.buttonArrow} />
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -237,13 +221,6 @@ export default function SignInScreen() {
               <Ionicons name="logo-google" size={18} color="#EA4335" style={styles.socialIcon} />
               <Text style={styles.socialButtonText}>Continue with Google</Text>
             </TouchableOpacity>
-
-
-            {/* Phone */}
-            <TouchableOpacity style={styles.socialButton} onPress={() => router.push('/(auth)/otp-verify')}>
-              <Feather name="phone" size={18} color="#6B21A8" style={styles.socialIcon} />
-              <Text style={styles.socialButtonText}>Continue with Phone</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Security Disclaimer Footer */}
@@ -255,7 +232,7 @@ export default function SignInScreen() {
               Your data is secure and encrypted.{'\n'}We never share your information.
             </Text>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -473,4 +450,3 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
-

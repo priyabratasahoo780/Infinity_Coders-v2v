@@ -1,4 +1,6 @@
 import React from 'react';
+import { useAuth } from "@clerk/clerk-expo";
+import { useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -17,11 +19,17 @@ const { width } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
 
+  useEffect(() => {
+    if (isSignedIn) {
+      router.replace("/(drawer)/(tabs)/home");
+    }
+  }, [isSignedIn]);
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
-      
+
       {/* Top Header Row */}
       <View style={styles.topRow}>
         <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(auth)/sign-in')}>
@@ -30,7 +38,7 @@ export default function OnboardingScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -118,7 +126,7 @@ export default function OnboardingScreen() {
         </View>
 
         {/* Action Button - Navigates to Features page */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.getStartedButton}
           activeOpacity={0.9}
           onPress={() => router.push('/features')}
@@ -136,8 +144,8 @@ export default function OnboardingScreen() {
         </View>
 
         {/* AI Voice Engine Debug */}
-        <TouchableOpacity 
-          style={{ marginTop: 20, alignItems: 'center' }} 
+        <TouchableOpacity
+          style={{ marginTop: 20, alignItems: 'center' }}
           onPress={() => router.push('/test-ai-voice')}
         >
           <Text style={{ color: '#0E9F6E', fontWeight: 'bold' }}>Test AI Voice Engine (Debug)</Text>
