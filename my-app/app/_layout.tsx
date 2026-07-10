@@ -44,7 +44,7 @@ function InitialLayout() {
       <Stack.Screen name="features" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-      <Stack.Screen name="--" options={{ headerShown: false }} />
+      <Stack.Screen name="oauth-native-callback" options={{ headerShown: false }} />
       <Stack.Screen
         name="test-ai-voice"
         options={{ headerShown: false, presentation: "modal" }}
